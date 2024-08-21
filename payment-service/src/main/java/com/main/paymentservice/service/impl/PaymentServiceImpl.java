@@ -28,7 +28,7 @@ import java.util.List;
 public class PaymentServiceImpl implements PaymentService {
 
     private final TransactionRepository transactionRepository;
-    private final WalletService walletService;
+    private final WalletService walletService; // Todo: fix error
 
     @Override
     @Transactional(rollbackFor = Exception.class)
