@@ -28,7 +28,7 @@ import java.util.List;
 public class PaymentServiceImpl implements PaymentService {
 
     private final TransactionRepository transactionRepository;
-    private final WalletService walletService; // Todo: fix error
+    private final WalletService walletService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -95,4 +95,5 @@ public class PaymentServiceImpl implements PaymentService {
         Wallet walletByAccountId = walletService.getWalletByAccountId(accountId);
         return walletByAccountId.getAccountID();
     }
+
 }
