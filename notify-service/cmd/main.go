@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/go-co-op/gocron"
 	"github.com/spf13/viper"
 	"log"
 	"notify-service/config"
 	"notify-service/internal/app/models"
+	"notify-service/internal/app/service"
 	"os"
 	"time"
 )
@@ -35,16 +35,16 @@ func main() {
 func mailChannelListener() {
 	go func() {
 		for {
-			// Read the next email from the channel
-			//msg := <-appConfig.MailChan
-			// Send the email
-			//service
+			//Read the next email from the channel
+			msg := <-appConfig.MailChan
+			//Send the email
+			service.SendMail(msg)
 		}
 	}()
 }
 
 func initScheduler() {
-	s := gocron.NewScheduler(time.UTC)
+	//s := gocron.NewScheduler(time.UTC)
 	//do, err := s.Every(5).Second().Do()
 }
 
