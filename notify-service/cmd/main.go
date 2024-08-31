@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/couchbase/gocb/v2"
+	"github.com/go-co-op/gocron"
 	"github.com/spf13/viper"
 	"log"
 	"notify-service/config"
@@ -44,12 +46,51 @@ func mailChannelListener() {
 }
 
 func initScheduler() {
-	//s := gocron.NewScheduler(time.UTC)
-	//do, err := s.Every(5).Second().Do()
+	s := gocron.NewScheduler(time.UTC)
+	do, err := s.Every(5).Second().Do(service.SendNotify)
+	if err != nil {
+		return
+	}
+	do.Tag("notify-scheduler")
+
+	s.StartAsync()
+
+	log.Println("Scheduler setup completed and ready to use... 🚀 🚀 🚀")
 }
 
 func initDatabaseOperations() {
+	configMap := viper.GetStringMapString("couchbase")
 
+	connectionString := configMap["host"]
+	bucketName := configMap["bucket"]
+	username := configMap["username"]
+	password := configMap["password"]
+
+	options := gocb.ClusterOptions{
+		Authenticator: gocb.PasswordAuthenticator{
+			Username: username,
+			Password: password,
+		},
+	}
+
+	cluster, err := gocb.Connect("couchbase://"+connectionString, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	bucket := cluster.Bucket(bucketName)
+
+	err = bucket.WaitUntilReady(5*time.Second, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db := connectToDB()
+
+	repository := service.NewRepository(*cluster, *bucket, db, &appConfig)
+	service.NewHandlers(repository)
+
+	log.Println("Couchbase setup completed and ready to use... 🚀 🚀 🚀")
 }
 
 func connectToDB() *sql.DB {
