@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/go-co-op/gocron"
 	"github.com/spf13/viper"
 	"log"
 	"notify-service/config"
@@ -43,7 +44,8 @@ func mailChannelListener() {
 }
 
 func initScheduler() {
-
+	s := gocron.NewScheduler(time.UTC)
+	//do, err := s.Every(5).Second().Do()
 }
 
 func initDatabaseOperations() {

@@ -26,6 +26,12 @@ type TransactionSaga struct {
 	IsSuccessful  bool   `json:"isSuccessful"`
 }
 
+type Account struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+	Name  string `json:"full_name"`
+}
+
 // MailData holds data used when sending emails
 type MailData struct {
 	To       string
