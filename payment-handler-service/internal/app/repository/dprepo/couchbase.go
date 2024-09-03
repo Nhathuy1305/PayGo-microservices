@@ -15,4 +15,5 @@ func NewCouchbaseRepository(cluster gocb.Cluster, bucket gocb.Bucket) dbrepo.Cou
 		Cluster: &cluster,
 		Bucket:  &bucket,
 	}
+	// TODO: fix error
 }
