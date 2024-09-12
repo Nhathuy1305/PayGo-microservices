@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/couchbase/gocb/v2"
+	"github.com/spf13/viper"
 	"io"
 	"log"
 	"net/http"
@@ -145,6 +146,71 @@ func createPaymentDemand(payload models.PaymentRequestPayload) (string, error) {
 	return paymentResponsePayload.ID, nil
 }
 
-func DoPaymentWithRequest(payload models.PaymentRequestPayload) (models.PaymentResponsePayload, error) {
+func createTokenForPayment(payload models.PaymentRequestPayload) (models.TokenResponse, error) {
+	url := "https://api.paymentsos.com/tokens"
+	var tokenRequestPayload models.TokenRequest
+	tokenRequestPayload.CardNumber = payload.Transaction.CardNumber
+	tokenRequestPayload.CVV = payload.Transaction.CVV
+	tokenRequestPayload.ExpireDate = fmt.Sprintf("%d/%d", payload.Transaction.ExpireMonth, payload.Transaction.ExpireYear)
+	tokenRequestPayload.TokenType = "credit_card"
+	tokenRequestPayload.HolderName = payload.Transaction.HolderName
 
+	out, err := json.Marshal(tokenRequestPayload)
+	if err != nil {
+		_ = fmt.Sprintf("failed to marshal tokenRequestPayload: %v", err)
+		return models.TokenResponse{}, err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(out))
+	if err != nil {
+		_ = fmt.Sprintf("failed to create new request: %v", err)
+		return models.TokenResponse{}, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-payments-os-env", headers.XPaymentsOsEnv)
+	req.Header.Set("api-version", headers.ApiVersion)
+	req.Header.Set("public-key", headers.PublicKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		_ = fmt.Sprintf("failed to do request: %v", err)
+		return models.TokenResponse{}, err
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Sprintf("failed to close body: %v", err)
+		}
+	}(resp.Body)
+
+	log.Println("Transaction ID: {}, and createTokenForPayment status is: {}", payload.ID, resp.Status)
+
+	var tokenResponsePayload models.TokenResponse
+	err = json.NewDecoder(resp.Body).Decode(&tokenResponsePayload)
+	if err != nil {
+		_ = fmt.Sprintf("failed to decode response: %v", err)
+		return models.TokenResponse{}, err
+	}
+
+	return tokenResponsePayload, nil
+}
+
+func DoPaymentWithRequest(payload models.PaymentRequestPayload) (models.PaymentResponsePayload, error) {
+	initHeaders()
+
+	token, err := createTokenForPayment(payload)
+	if err != nil {
+		//hand
+	}
+}
+
+func initHeaders() {
+	headers.XPaymentsOsEnv = viper.Get("payment-os.header.x-payments-os-env").(string)
+	headers.ApiVersion = viper.Get("payment-os.header.api-version").(string)
+	headers.PublicKey = viper.Get("PAYMENT_PUBLIC_KEY").(string)
+	headers.PrivateKey = viper.Get("PAYMENT_PRIVATE_KEY").(string)
+	headers.AppID = viper.Get("PAYMENT_APP_ID").(string)
 }
