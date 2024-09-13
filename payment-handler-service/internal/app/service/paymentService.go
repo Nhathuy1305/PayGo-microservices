@@ -203,8 +203,67 @@ func DoPaymentWithRequest(payload models.PaymentRequestPayload) (models.PaymentR
 
 	token, err := createTokenForPayment(payload)
 	if err != nil {
-		//hand
+		handleSagaStatus(payload, err)
+		return models.PaymentResponsePayload{}, fmt.Errorf("failed to create token for payment: %w", err)
 	}
+
+	paymentID, err := createPaymentDemand(payload)
+	if err != nil {
+		handleSagaStatus(payload, err)
+		return models.PaymentResponsePayload{}, fmt.Errorf("failed to create payment demand: %w", err)
+	}
+
+	payment, err := completePayment(paymentID, token.Token, payload)
+	if err != nil {
+		handleSagaStatus(payload, err)
+		return models.PaymentResponsePayload{}, fmt.Errorf("failed to complete payment: %w", err)
+	}
+
+	handleSagaStatus(payload, err)
+
+	if payment != "" {
+		return models.PaymentResponsePayload{
+			ID:        payload.ID,
+			CreatedAt: payload.CreatedAt,
+			Status:    "Succeed",
+			Message:   "Payment is successful",
+		}, nil
+	} else {
+		return models.PaymentResponsePayload{
+			ID:        payload.ID,
+			CreatedAt: payload.CreatedAt,
+			Status:    "Failed",
+			Message:   "Payment is failed",
+		}, nil
+	}
+}
+
+func handleSagaStatus(payload models.PaymentRequestPayload, err error) {
+	sagaRecord, err := Repo.DB.QueryTransactionSaga(payload.Transaction.ID)
+	if err != nil || len(sagaRecord) == 0 {
+		log.Printf("failed to query transaction saga: %v", err)
+	}
+	saga := sagaRecord[0]
+
+	var sagaStatus string
+	var e string
+	if err != nil {
+		sagaStatus = "FAILED"
+		e = err.Error()
+	} else {
+		sagaStatus = "COMPLETED"
+		e = ""
+		SendPaymentSuccessEvent(saga)
+	}
+	saga.SagaStatus = sagaStatus
+	saga.Error = e
+	saga.IsSuccessful = true
+	err = Repo.DB.UpdateTransactionSaga(saga)
+	if err != nil {
+		log.Printf("failed to update transaction saga: %v", err)
+	}
+
+	log.Printf("saga status is updated successfully for transaction: %v", payload.Transaction.ID)
 }
 
 func initHeaders() {

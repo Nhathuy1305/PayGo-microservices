@@ -87,5 +87,5 @@ type TransactionSaga struct {
 	AccountID     string `json:"accountID"`
 	SagaStatus    string `json:"sagaStatus"`
 	Error         string `json:"error"`
-	IsSuccessful  string `json:"isSuccessful"`
+	IsSuccessful  bool   `json:"isSuccessful"`
 }
