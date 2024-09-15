@@ -1,0 +1,14 @@
+payment-os:
+  header:
+    x-payments-os-env: 'test'
+    api-version: '1.1.0'
+
+couchbase:
+  host: 'couchbase-node1'
+  username: 'Administrator'
+  password: '123456'
+  bucket: 'payment'
+
+kafka:
+  producer: 'kafka-broker-1:9092'
+  consumer: 'kafka-broker-1:9092'
