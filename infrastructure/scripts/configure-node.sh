@@ -35,3 +35,12 @@ echo Configuring Individual Node Settings
   --node-init-hostname=${NODE_INIT_HOSTNAME:='127.0.0.1'} \
 > /dev/null
 
+if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
+  # configure master node
+  echo Configuring Cluster
+  CMD="/opt/couchbase/bin/couchbase-cli cluster-init"
+  CMD="$CMD --cluster localhost:8091"
+  CMD="$CMD --cluster-username $CLUSTER_USERNAME"
+  CMD="$CMD --cluster-password $CLUSTER_PASSWORD"
+  CMD="$CMD --cluster-ramsize $CLUSTER_RAMSIZE"
+  # is the index service going to be running
