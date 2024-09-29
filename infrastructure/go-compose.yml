@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  notify-service:
+    build:
+      context: ./../notify-service
+      dockerfile: ./../notify-service/notify-service.dockerfile
+    restart: always
+    environment:
+      - "ENV=DOCKER"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  query-service:
+    build:
+      context: ./../query-service
+      dockerfile: ./../query-service/query-service.dockerfile
+    restart: always
+    environment:
+      - "ENV=DOCKER"
+    ports:
+      - "1903:1903"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  payment-handler-service:
+    build:
+      context: ./../payment-handler-service
+      dockerfile: ./../payment-handler-service/payment-handler.dockerfile
+    restart: always
+    environment:
+      - "ENV=DOCKER"
+    deploy:
+      mode: replicated
+      replicas: 1
+    networks:
+      - ${GLOBAL_NETWORK}

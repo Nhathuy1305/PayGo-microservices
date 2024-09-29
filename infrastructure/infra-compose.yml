@@ -1,0 +1,118 @@
+version: '3.8'
+services:
+  redis:
+    container_name: redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    hostname: zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  redis-commander:
+    container_name: redis_commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: 'mailhog'
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  couchbase-node1:
+    build:
+      context: .
+    container_name: couchbase-node1
+    hostname: couchbase-node1
+    ports:
+      - "8091-8094:8091-8094"
+      - "11210:11210"
+    environment:
+      NODE_TYPE: DEFAULT
+      CLUSTER_USERNAME: Administrator
+      CLUSTER_PASSWORD: 123456
+      CLUSTER_NAME: payment-cluster
+      SERVICES: data,index,query,fts
+      CLUSTER_RAMSIZE: 500
+      BUCKET: payment
+      BUCKET_RAMSIZE: 300
+      ENABLE_FLUSH: 1
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  couchbase-node2:
+    build:
+      context: .
+    container_name: couchbase-node2
+    depends_on:
+      - couchbase-node1
+    environment:
+      NODE_TYPE: CHILD
+      CLUSTER_USERNAME: Administrator
+      CLUSTER_PASSWORD: 123456
+      CLUSTER: couchbase-node1
+      SERVICES: data,index,query,fts
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  couchbase-node3:
+    build:
+      context: .
+    container_name: couchbase-node3
+    depends_on:
+      - couchbase-node1
+      - couchbase-node2
+    environment:
+      NODE_TYPE: CHILD
+      CLUSTER_USERNAME: Administrator
+      CLUSTER_PASSWORD: 123456
+      CLUSTER: couchbase-node1
+      SERVICES: data,index,query,fts
+      REBALANCE: 1
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  mongo:
+    image: mongo
+    hostname: mongo
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongo-data:/data/db
+    networks:
+      - ${GLOBAL_NETWORK}
+
+  postgres:
+    image: postgres:latest
+    hostname: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - ${GLOBAL_NETWORK}
