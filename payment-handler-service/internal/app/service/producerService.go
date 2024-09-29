@@ -12,7 +12,7 @@ import (
 var PaymentSuccessProducer kafka.Producer
 
 func SetupProducer() {
-	producer, _ := kafka.NewProducer(&kafka.ProducerConfig{ //TODO: Re-check it
+	producer, _ := kafka.NewProducer(&kafka.ProducerConfig{
 		Writer: kafka.WriterConfig{
 			Brokers: []string{viper.Get("kafka.producer").(string)},
 		},
