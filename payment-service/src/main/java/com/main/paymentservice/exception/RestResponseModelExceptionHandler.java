@@ -3,6 +3,7 @@ package com.main.paymentservice.exception;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -33,10 +34,8 @@ public class RestResponseModelExceptionHandler extends ResponseEntityExceptionHa
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    @Override   // TODO: Still cannot override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers, HttpStatus status,
-                                                                  WebRequest request) {
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         FieldError fieldError = ex.getBindingResult().getFieldError();
         ErrorResponse errorResponse = ErrorResponse.builder().errorCode("400")
                 .errorMessage(fieldError != null ? fieldError.getDefaultMessage() : null).build();

@@ -27,17 +27,12 @@ public class PaymentRequestProducer {
         final String value = objectMapper.writeValueAsString(paymentRequestEvent);
         kafkaTemplate.setDefaultTopic(topicName);
         final var result = kafkaTemplate.sendDefault(key, value);
-        result.addCallback(new ListenableFutureCallback<>() {
-            @Override
-            public void onSuccess(SendResult<String, String> result) {
-                handleSuccess(key, value, result);
-            }
 
-            @Override
-            public void onFailure(Throwable ex) {
-                handleFailure(key, value, ex);
-            }
-        });
+        result.thenAccept(sendResult -> handleSuccess(key, value, sendResult))
+                .exceptionally(ex -> {
+                    handleFailure(key, value, ex);
+                    return null;
+                });
     }
 
     private void handleFailure(String key, String value, Throwable ex) {
