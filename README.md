@@ -1,4 +1,4 @@
-# PAYLINK FUSION PROJECT
+# PAYGO PROJECT
 
 ## Introduction
 
