@@ -33,7 +33,7 @@ Java services use PostgreSQL, MongoDB, Couchbase.<br>
   variables.
 - Need Changes PaymentOS Credentials: `PAYMENT_PUBLIC_KEY` & `PAYMENT_PRIVATE_KEY` and `PAYMENT_APP_ID`.
   You can change these variables in 
-    `go-payment-handler-service/config/secret.env` file.
+    `payment-handler-service/config/secret.env` file.
 
 
 #### Run Infrastructure & Services
