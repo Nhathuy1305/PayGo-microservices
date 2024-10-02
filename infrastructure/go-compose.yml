@@ -3,7 +3,7 @@ services:
   notify-service:
     build:
       context: ./../notify-service
-      dockerfile: ./../notify-service/notify-service.dockerfile
+      dockerfile: ../notify-service/Dockerfile
     restart: always
     environment:
       - "ENV=DOCKER"
@@ -16,7 +16,7 @@ services:
   query-service:
     build:
       context: ./../query-service
-      dockerfile: ./../query-service/query-service.dockerfile
+      dockerfile: ../query-service/Dockerfile
     restart: always
     environment:
       - "ENV=DOCKER"
