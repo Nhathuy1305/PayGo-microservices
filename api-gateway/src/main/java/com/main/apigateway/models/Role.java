@@ -2,9 +2,8 @@ package com.main.apigateway.models;
 
 import com.main.apigateway.models.base.BaseEntity;
 import com.main.apigateway.models.enums.ERole;
+import jakarta.persistence.*;
 import lombok.*;
-
-import javax.persistence.*;
 
 @Entity
 @Getter
