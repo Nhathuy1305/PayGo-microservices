@@ -1,7 +1,5 @@
 FROM couchbase:latest
 
-MAINTAINER Nhathuy1305
-
 COPY scripts/configure-node.sh /
 COPY scripts/entrypoint.sh /
 

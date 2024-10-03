@@ -1,7 +1,5 @@
 FROM eclipse-temurin:17-jdk-focal AS build
 
-LABEL authors="Daniel-Dang"
-
 WORKDIR /build
 
 COPY .mvn/ ./.mvn
