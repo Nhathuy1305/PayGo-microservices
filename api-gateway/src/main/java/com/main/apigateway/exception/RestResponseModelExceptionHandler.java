@@ -1,8 +1,10 @@
 package com.main.apigateway.exception;
 
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,8 +12,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import javax.validation.ConstraintViolationException;
 
 @ControllerAdvice
 public class RestResponseModelExceptionHandler extends ResponseEntityExceptionHandler {
@@ -52,9 +52,10 @@ public class RestResponseModelExceptionHandler extends ResponseEntityExceptionHa
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
     }
 
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers, HttpStatus status,
+                                                                  HttpHeaders headers, HttpStatusCode status,
                                                                   WebRequest request) {
         FieldError fieldError = ex.getBindingResult().getFieldError();
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -63,5 +64,4 @@ public class RestResponseModelExceptionHandler extends ResponseEntityExceptionHa
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
-
 }

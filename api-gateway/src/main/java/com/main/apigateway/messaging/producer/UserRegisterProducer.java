@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -27,16 +27,24 @@ public class UserRegisterProducer {
     public void sendUserRegisterEventAsync(UserRegisterEvent userRegisterEvent) throws JsonProcessingException {
         final String key = UUID.randomUUID().toString();
         final String value = objectMapper.writeValueAsString(userRegisterEvent);
-        kafkaTemplate.setDefaultTopic(topicName);
-        final var result = kafkaTemplate.sendDefault(key, value);
-        result.addCallback(new ListenableFutureCallback<>() {
-            @Override
-            public void onFailure(Throwable ex) {
-                handleFailure(key, value, ex);
-            }
 
-            @Override
-            public void onSuccess(SendResult<String, String> result) {
+        // Send the message and get ListenableFuture
+        var future = kafkaTemplate.send(topicName, key, value);
+
+        // Convert ListenableFuture to CompletableFuture
+        CompletableFuture<SendResult<String, String>> completableFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                return future.get(); // Blocking call
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        // Handle success and failure
+        completableFuture.whenComplete((result, ex) -> {
+            if (ex != null) {
+                handleFailure(key, value, ex);
+            } else {
                 handleSuccess(key, value, result);
             }
         });

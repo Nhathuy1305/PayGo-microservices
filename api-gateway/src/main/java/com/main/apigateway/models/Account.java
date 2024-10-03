@@ -2,11 +2,11 @@ package com.main.apigateway.models;
 
 import com.main.apigateway.models.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import javax.validation.constraints.NotBlank;
 import java.util.HashSet;
 import java.util.Set;
 

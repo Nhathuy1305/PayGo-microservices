@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 RUN mkdir /app
 
@@ -8,7 +8,7 @@ WORKDIR /app
 
 RUN CGO_ENABLED=0 go build -o paymentHandler ./cmd/
 
-FROM golang:1.21-alpine
+FROM golang:1.23-alpine
 
 RUN mkdir /app
 
