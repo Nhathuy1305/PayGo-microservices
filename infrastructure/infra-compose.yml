@@ -19,7 +19,7 @@ services:
       - ${GLOBAL_NETWORK}
 
   redis-commander:
-    container_name: redis_commander
+    container_name: redis-commander
     hostname: redis-commander
     image: rediscommander/redis-commander:latest
     restart: always

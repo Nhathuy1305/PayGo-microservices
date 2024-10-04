@@ -31,7 +31,7 @@ echo Configuring Individual Node Settings
   --user=$CLUSTER_USERNAME \
   --password=$CLUSTER_PASSWORD \
   --node-init-data-path=${NODE_INIT_DATA_PATH:='/opt/couchbase/var/lib/couchbase/data'} \
-  --node-init-index-path${NODE_INIT_INDEX_PATH:='/opt/couchbase/var/lib/couchbase/indexes'} \
+  --node-init-index-path=${NODE_INIT_INDEX_PATH:='/opt/couchbase/var/lib/couchbase/indexes'} \
   --node-init-hostname=${NODE_INIT_HOSTNAME:='127.0.0.1'} \
 > /dev/null
 
@@ -53,18 +53,18 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
     CMD="$CMD --cluster-fts-ramsize ${CLUSTER_FTS_RAMSIZE:=256}"
   fi
   # is the eventing service going to be running?
-  if [[ SERVICES == *"eventing"* ]]; then
+  if [[ $SERVICES == *"eventing"* ]]; then
     CMD="$CMD --cluster-eventing-ramsize ${CLUSTER_EVENTING_RAMSIZE:=256}"
   fi
   # is the analytics service going to be running?
-  if [[ SERVICES == *"analytics"* ]]; then
+  if [[ $SERVICES == *"analytics"* ]]; then
     CMD="$CMD --cluster-analytics-ramsize ${CLUSTER_ANALYTICS_RAMSIZE:=1024}"
   fi
   CMD="$CMD --services=$SERVICES"
   CMD="$CMD > /dev/null"
   eval $CMD
 
-  echo Setting the CLuster Name
+  echo Setting the Cluster Name
   /opt/couchbase/bin/couchbase-cli setting-cluster \
     --cluster localhost:8091 \
     --user $CLUSTER_USERNAME \
@@ -73,7 +73,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
   > /dev/null
 
   echo Configuring Auto Failover Settings
-  /opt/couchbase/bin/couchbase-cli  setting-autofailover \
+  /opt/couchbase/bin/couchbase-cli setting-autofailover \
     --cluster localhost:8091 \
     --user $CLUSTER_USERNAME \
     --password $CLUSTER_PASSWORD \
@@ -85,7 +85,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
   echo Creating $BUCKET bucket
   /opt/couchbase/bin/couchbase-cli bucket-create \
     --cluster localhost:8091 \
-    --user $CLUSTER_USERNAME \
+    --username $CLUSTER_USERNAME \
     --password $CLUSTER_PASSWORD \
     --bucket $BUCKET \
     --bucket-ramsize $BUCKET_RAMSIZE \
@@ -93,6 +93,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
     --bucket-priority ${BUCKET_PRIORITY:=low} \
     --enable-index-replica ${ENABLE_INDEX_REPLICA:=0} \
     --enable-flush ${ENABLE_FLUSH:=0} \
+    --bucket-replica ${BUCKET_REPLICA:=1} \
     --bucket-eviction-policy ${BUCKET_EVICTION_POLICY:=valueOnly} \
     --compression-mode ${BUCKET_COMPRESSION:=off} \
     --max-ttl ${BUCKET_MAX_TTL:=0} \
@@ -103,7 +104,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
   echo Creating RBAC user $RBAC_USERNAME
   /opt/couchbase/bin/couchbase-cli user-manage \
     --cluster localhost:8091 \
-    --user $CLUSTER_USERNAME \
+    --username $CLUSTER_USERNAME \
     --password $CLUSTER_PASSWORD \
     --set \
     --rbac-username $RBAC_USERNAME \
@@ -123,7 +124,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
   CMD="$CMD --password=$CLUSTER_PASSWORD"
   CMD="$CMD --enable-email-alert=$ENABLE_EMAIL_ALERT"
   if [[ "${ENABLE_EMAIL_ALERT}" == "1" ]]; then
-    CMD="$CMD --email-recipients=$EMAIL_RECIPIENTS"]
+    CMD="$CMD --email-recipients=$EMAIL_RECIPIENTS"
     CMD="$CMD --email-sender=$EMAIL_SENDER"
     CMD="$CMD --email-user=$EMAIL_USER"
     CMD="$CMD --email-password=$EMAIL_PASSWORD"
@@ -169,7 +170,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
     fi
     if [[ "${GSI_COMPACTION_MODE}" == "circular" ]]; then
       CMD="$CMD --compaction-gsi-interval=${COMPACTION_GSI_INTERVAL:=Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday}"
-      if [ -z ${COMPACTION_PERIOD_FROM+X} ]; then
+      if [ -z ${COMPACTION_PERIOD_FROM+x} ]; then
         if [ -z ${COMPACTION_PERIOD_TO+x} ]; then
           CMD="$CMD --compaction-gsi-period-from=$COMPACTION_GSI_PERIOD_FROM"
           CMD="$CMD --compaction-gsi-period-to=$COMPACTION_GSI_PERIOD_TO"
@@ -182,7 +183,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
 
   # sample buckets
   if [ -n "$SAMPLE_BUCKETS" ]; then
-    # loop over the comma-delimited list of sample bucket i.e. beer-sample, travel-sample
+    # loop over the comma-delimited list of sample buckets i.e. beer-sample, travel-sample
     for SAMPLE in $(echo $SAMPLE_BUCKETS | sed "s/,/ /g")
     do
       # make sure the sample requested actually exists
@@ -193,7 +194,7 @@ if [[ "${NODE_TYPE}" == "DEFAULT" ]]; then
           -n localhost:8091 \
           -u $CLUSTER_USERNAME \
           -p $CLUSTER_PASSWORD \
-          -b $SAMPLE
+          -b $SAMPLE \
           -s 100 \
           /opt/couchbase/samples/$SAMPLE.zip \
         > /dev/null 2>&1
@@ -207,7 +208,7 @@ else
   if [[ ${CLUSTER} != *":8091" ]]; then
     CLUSTER="$CLUSTER:8091"
   fi
-  echo Waiting for $CLUSTER to become evailable
+  echo Waiting for $CLUSTER to become available
   until $(curl --output /dev/null --silent --head --fail -u $CLUSTER_USERNAME:$CLUSTER_PASSWORD http://${CLUSTER}/pools); do
     printf .
     sleep 1
@@ -241,4 +242,4 @@ else
   fi
 fi
 
-echo THe new $NODE_TYPE node has been successfully configured
+echo The new $NODE_TYPE node has been successfully configured
