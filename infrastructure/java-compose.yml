@@ -35,17 +35,17 @@ services:
     networks:
       - ${GLOBAL_NETWORK}
 
-  # discovery-service:
-  #   image: 'daniel135dang/discovery-service:latest'
-  #   container_name: discovery-service
-  #   hostname: discovery-service
-  #   ports:
-  #     - "8761:8761"
-  #   volumes:
-  #     - "./docker-logs:/workspace/discovery-service/logs"
-  #   environment:
-  #     - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5014 -Xms128m -Xmx256m"
-  #     - "LOGGING_LEVEL_ROOT=info"
-  #     - "SERVER_PORT=8761"
-  #   networks:
-  #     - ${GLOBAL_NETWORK}
+  discovery-service:
+    image: 'daniel135dang/discovery-service:latest'
+    container_name: discovery-service
+    hostname: discovery-service
+    ports:
+      - "8761:8761"
+    volumes:
+      - "./docker-logs:/workspace/discovery-service/logs"
+    environment:
+      - "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5014 -Xms128m -Xmx256m"
+      - "LOGGING_LEVEL_ROOT=info"
+      - "SERVER_PORT=8761"
+    networks:
+      - ${GLOBAL_NETWORK}

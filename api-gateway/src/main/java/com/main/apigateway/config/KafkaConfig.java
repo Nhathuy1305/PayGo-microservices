@@ -46,7 +46,7 @@ public class KafkaConfig {
                     .map(myTopic -> new NewTopic(myTopic, 1, (short) 1))
                     .forEach(newTopic -> createTopics(adminClient, newTopic));
         } catch (Exception e) {
-            log.error("Error while creating topic: {}", e.getMessage());
+            log.error("Error while creating topic: " + e.getMessage());
         }
     }
 
@@ -54,7 +54,7 @@ public class KafkaConfig {
         try {
             adminClient.createTopics(List.of(newTopic)).all().get();
         } catch (ExecutionException | InterruptedException e) {
-            log.error("Error while creating topic: {}", e.getMessage());
+            log.error("Error while creating topic: " + e.getMessage());
         }
     }
 
