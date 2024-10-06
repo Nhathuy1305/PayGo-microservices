@@ -30,7 +30,10 @@ public class KafkaConfig {
         return new KafkaAdmin(config);
     }
 
-    @Bean
+    public KafkaConfig() {
+        listAndCreateTopics();
+    }
+
     public void listAndCreateTopics() {
         Map<String, Object> config = new HashMap<>();
         config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaAdminURL);
