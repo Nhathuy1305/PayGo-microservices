@@ -23,13 +23,13 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    continue-on-error: false
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
     username: postgres
     password: postgres
+  jpa:
     hibernate:
       ddl-auto: validate
-      show-sql: true
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -37,6 +37,9 @@ spring:
 
   application:
     name: api-gateway
+  sql:
+    init:
+      continue-on-error: false
 
 management:
   health:
