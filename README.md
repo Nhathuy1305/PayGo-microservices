@@ -63,7 +63,7 @@ docker-compose up -d
 
 ### Java
 
-- [x] [Auth & Gateway](#!)
+- [x] [API Gateway](#!)
 - [x] [Payment Service](#!)
 
 
