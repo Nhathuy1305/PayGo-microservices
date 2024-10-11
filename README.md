@@ -62,7 +62,7 @@ docker-compose up -d
 - [x] [Query Service](#!)
 
 ### Java
-
+- [x] [Discovery Service](#!)
 - [x] [API Gateway](#!)
 - [x] [Payment Service](#!)
 
