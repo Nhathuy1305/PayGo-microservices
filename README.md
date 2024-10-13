@@ -10,7 +10,7 @@ Java services use PostgreSQL, MongoDB, Couchbase.<br>
 
 ## Architecture
 
-![Architecture](img/diagram.png)
+![Architecture](img/paygo.jpg)
 
 ## Prerequisites
 
