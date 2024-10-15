@@ -1,0 +1,79 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_REGISTRY: docker.io
+      DOCKER_REPOSITORY: daniel135dang
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Get Version Tag
+        id: version_tag
+        run: |
+          if [ -n "$(git describe --tags --exact-match 2>/dev/null)" ]; then
+            echo "::set-output name=version::$(git describe --tags --exact-match)"
+          else
+            echo "::set-output name=version::$(git rev-parse --short HEAD)"
+          fi
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login ${{ env.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Build and Push Notify Service
+        run: |
+          docker build -t ${{ env.DOCKER_REPOSITORY }}/notify-service:${{ steps.version_tag.outputs.version }} -f ./notify-service/Dockerfile ./notify-service
+          docker push ${{ env.DOCKER_REPOSITORY }}/notify-service:${{ steps.version_tag.outputs.version }}
+      
+      - name: Build and Push Query Service
+        run: |
+          docker build -t ${{ env.DOCKER_REPOSITORY }}/query-service:${{ steps.version_tag.outputs.version }} -f ./query-service/Dockerfile ./query-service
+          docker push ${{ env.DOCKER_REPOSITORY }}/query-service:${{ steps.version_tag.outputs.version }}
+      
+      - name: Build and Push Payment Handler Service
+        run: |
+          docker build -t ${{ env.DOCKER_REPOSITORY }}/payment-handler-service:${{ steps.version_tag.outputs.version }} -f ./payment-handler-service/Dockerfile ./payment-handler-service
+          docker push ${{ env.DOCKER_REPOSITORY }}/payment-handler-service:${{ steps.version_tag.outputs.version }}
+      
+      - name: Build and Push Gateway Service
+        run: |
+          docker build -t ${{ env.DOCKER_REPOSITORY }}/gateway:${{ steps.version_tag.outputs.version }} -f ./api-gateway/Dockerfile ./api-gateway
+          docker push ${{ env.DOCKER_REPOSITORY }}/gateway:${{ steps.version_tag.outputs.version }}
+      
+      - name: Build and Push Payment Service
+        run: |
+          docker build -t ${{ env.DOCKER_REPOSITORY }}/payment-service:${{ steps.version_tag.outputs.version }} -f ./payment-service/Dockerfile ./payment-service
+          docker push ${{ env.DOCKER_REPOSITORY }}/payment-service:${{ steps.version_tag.outputs.version }}
+      
+      - name: Build and Push Discovery Service
+        run: |
+          docker build -t ${{ env.DOCKER_REPOSITORY }}/discovery-service:${{ steps.version_tag.outputs.version }} -f ./discovery-server/Dockerfile ./discovery-server
+          docker push ${{ env.DOCKER_REPOSITORY }}/discovery-service:${{ steps.version_tag.outputs.version }}
+
+# deploy:
+#     needs: build
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Deploy services with Docker Compose
+#         run: |
+#           docker-compose -f infrastructure/docker-compose1.yml -f infrastructure/docker-compose2.yml pull
+#           docker-compose -f infrastructure/docker-compose1.yml -f infrastructure/docker-compose2.yml up -d
